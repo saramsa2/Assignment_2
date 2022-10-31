@@ -45,27 +45,31 @@ public class MainActivity extends AppCompatActivity {
         btLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = etEmail.getText().toString();
-                String password = etPassword.getText().toString();
-                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()){
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            Toast.makeText(MainActivity.this, "Authentication succeed.",
-                                    Toast.LENGTH_SHORT).show();
-                            if(user.getDisplayName().equals("admin")){
-                                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
-                                startActivity(intent);
-                            }
 
-                        }
-                        else{
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+                startActivity(intent);
+
+//                String email = etEmail.getText().toString();
+//                String password = etPassword.getText().toString();
+//                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<AuthResult> task) {
+//                        if (task.isSuccessful()){
+//                            FirebaseUser user = mAuth.getCurrentUser();
+//                            Toast.makeText(MainActivity.this, "Authentication succeed.",
+//                                    Toast.LENGTH_SHORT).show();
+//                            if(user.getDisplayName().equals("admin")){
+//                                Intent intent = new Intent(MainActivity.this, AdminActivity.class);
+//                                startActivity(intent);
+//                            }
+//
+//                        }
+//                        else{
+//                            Toast.makeText(MainActivity.this, "Authentication failed.",
+//                                    Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                });
             }
         });
 

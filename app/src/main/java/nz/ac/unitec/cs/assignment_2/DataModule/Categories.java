@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Categories {
     @SerializedName("trivia_categories")
-    public List<Category> categories;
+    private List<Category> categories;
 
     public List<Category> getCategories() {
         return categories;

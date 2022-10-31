@@ -1,5 +1,6 @@
 package nz.ac.unitec.cs.assignment_2;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
@@ -13,13 +14,22 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import nz.ac.unitec.cs.assignment_2.DataModule.Categories;
 import nz.ac.unitec.cs.assignment_2.DataModule.Category;
 import nz.ac.unitec.cs.assignment_2.Rest.CategoryControllerRestAPI;
 
@@ -31,8 +41,12 @@ public class AdminActivity extends AppCompatActivity {
 
     Button btCreate, btCancel;
 
-    Calendar calendar = Calendar.getInstance();
+
+    Categories categories;
     private CategoryControllerRestAPI restapi;
+
+    Calendar calendar = Calendar.getInstance();
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,35 +111,24 @@ public class AdminActivity extends AppCompatActivity {
     }
 
     private void addEventListeners() {
+        restapi.setReadCategoriesListeners(new CategoryControllerRestAPI.readCategoriesListeners() {
+            @Override
+            public void readSucceed(Categories categories) {
+                updateCategories(categories);
+            }
+        });
+
         btNewTournament.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(AdminActivity.this, EditTournamentActivity.class);
-//                startActivity(intent);
-                List<Category> categories = restapi.getCategoryList();
-                /// category spinner set
-
-                if(categories != null) {
-                    List<String> categoryName = new ArrayList<>();
-                    List<Integer> categoryId = new ArrayList<>();
-                    categoryId.add(0);
-                    categoryName.add("Any Category");
-                    for(Category cate: categories) {
-                        categoryId.add(cate.getId());
-                        categoryName.add(cate.getName());
-                    }
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(AdminActivity.this, android.R.layout.simple_spinner_item, categoryName);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinCategory.setAdapter(adapter);
-
-                }
+                setScreen("create");
             }
         });
 
         btTournamentList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                // new activity
             }
         });
 
@@ -172,7 +175,40 @@ public class AdminActivity extends AppCompatActivity {
         btCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                try {
+                    String QuizName = etName.getText().toString();
+                    String QuizDifficulty = spinDifficulty.getContext().toString();
+                    String QuizStartDate = etStartDate.getText().toString();
+                    String QuizEndDate = etEndDate.getText().toString();
+                    int QuizCategoryId = spinCategory.getId();
 
+                    Map<String, Object> quiz = new HashMap<>();
+                    quiz.put("name", QuizName);
+                    quiz.put("category_id", QuizCategoryId);
+                    quiz.put("difficulty", QuizDifficulty);
+                    quiz.put("start_date", QuizStartDate);
+                    quiz.put("End_date", QuizEndDate);
+
+                    db.collection("QuizList")
+                            .add(quiz)
+                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                @Override
+                                public void onSuccess(DocumentReference documentReference) {
+                                    Toast.makeText(AdminActivity.this, "succeed.",
+                                    Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(AdminActivity.this, e.toString(),
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -184,8 +220,29 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
+    private void updateCategories(Categories categories) {
+        this.categories = categories;
+
+        if(categories != null) {
+            List<String> categoryName = new ArrayList<>();
+            List<Integer> categoryId = new ArrayList<>();
+            categoryId.add(0);
+            categoryName.add("Any Category");
+            for(Category cate: categories.getCategories()) {
+                categoryId.add(cate.getId());
+                categoryName.add(cate.getName());
+            }
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(AdminActivity.this, android.R.layout.simple_spinner_item, categoryName);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinCategory.setAdapter(adapter);
+
+        }
+    }
+
     private void initRestAPI() {
         restapi = new CategoryControllerRestAPI();
         restapi.start();
+//        category = (Category) restapi.getCategoryList();
+
     }
 }

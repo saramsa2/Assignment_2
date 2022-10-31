@@ -1,5 +1,7 @@
 package nz.ac.unitec.cs.assignment_2.Rest;
 
+import android.view.View;
+
 import java.util.List;
 
 import nz.ac.unitec.cs.assignment_2.DataModule.Categories;
@@ -11,8 +13,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CategoryControllerRestAPI implements retrofit2.Callback<Categories>{
     final String BASE_URL = "https://opentdb.com/";
-//    private Categories categories;
-    private List<Category> categoryList;
+    private Categories categories;
+//    private List<Category> categoryList;
+    private readCategoriesListeners readEventListener = null;
 
     public void start() {
         Retrofit retrofit = new Retrofit.Builder()
@@ -27,16 +30,17 @@ public class CategoryControllerRestAPI implements retrofit2.Callback<Categories>
     @Override
     public void onResponse(Call<Categories> call, Response<Categories> response) {
         if(response.isSuccessful()) {
-            Categories categories = response.body();
-            categoryList = categories.getCategories();
-            if(categoryList != null) {
-                for(Category cate : categoryList) {
-
-                }
-            }
-            else {
-
-            }
+            categories = response.body();
+            readEventListener.readSucceed(categories);
+//            categoryList = categories.getCategories();
+//            if(categoryList != null) {
+//                for(Category cate : categoryList) {
+//
+//                }
+//            }
+//            else {
+//
+//            }
         }
     }
 
@@ -45,7 +49,15 @@ public class CategoryControllerRestAPI implements retrofit2.Callback<Categories>
         t.printStackTrace();
     }
 
-    public List<Category> getCategoryList() {
-        return categoryList;
+    public Categories  getCategories() {
+        return categories;
+    }
+
+    public void setReadCategoriesListeners(readCategoriesListeners readEventListener) {
+        this.readEventListener = readEventListener;
+    }
+
+    public interface readCategoriesListeners {
+        void readSucceed(Categories categories);
     }
 }
